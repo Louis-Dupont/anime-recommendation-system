@@ -38,3 +38,5 @@ Project Organization
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+
+<p>To add memory to the container: https://stackoverflow.com/questions/44533319/how-to-assign-more-memory-to-docker-container</p>
