@@ -10,20 +10,22 @@ PROFILE = default
 PROJECT_NAME = anime-recommendation-system
 PYTHON_INTERPRETER = python
 
-ifeq (,$(shell which conda))
-HAS_CONDA=False
-else
-HAS_CONDA=True
-endif
+include .env
+export
 
 #################################################################################
 # COMMANDS                                                                      #
 #################################################################################
 
+# Initialise all environement variables from .env file
+init_env_variables:
+	export $(grep -v '^#' .env | xargs)
+
+
 ## Install Python Dependencies
 requirements: test_environment
-	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
-	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
+	python -m pip install -U pip setuptools wheel
+	python -m pip install -r requirements.txt
 
 
 ## Delete all compiled Python files
@@ -32,13 +34,34 @@ clean:
 	find . -type d -name "__pycache__" -delete
 
 
+######################
+#	DIRECT RUNNERS	 #
+######################
 train:
 	python src/training.py \
 		--data_folder $(PWD)/data \
-		--model_path $(PWD)/models/trained_model_todelete.pkl \
-		--nb_hidden_features 2
+		--model_path $(PWD)/models/trained_model.pkl \
+		--nb_hidden_features $(NB_FEATURES)
+
+flask_run:
+	python flask/app.py \
+		--model_path $(PWD)/models/trained_model.pkl \
+		--debug False \
+		--host_ip $(FLASK_IP) \
+		--port $(FLASK_PORT)
+
+streamlit_run:
+	streamlit run streamlit/app.py \
+		--browser.serverAddress $(STREAMLIT_IP) \
+		--server.port $(STREAMLIT_PORT) \
+		-- \
+			--model_ip $(FLASK_IP) \
+			--model_port $(FLASK_PORT)
 
 
+######################
+#	DOCKER BUILDS	 #
+######################
 docker_build_training:
 	docker build \
 		-t training:v0 \
@@ -55,25 +78,25 @@ docker_build_streamlit:
 		-f docker/streamlit/Dockerfile .
 
 
-PROJECT_FOLDER=/Users/louisdupont/Desktop/python_tests/anime-recommendation-system
+######################
+#	DOCKER RUN	 	#
+######################
 docker_run_training:
 	docker run \
 		-it --rm \
-		-v $(PROJECT_FOLDER)/data/anime.csv:/anime/data/anime.csv \
-		-v $(PROJECT_FOLDER)/data/rating_complete.csv:/anime/data/rating_complete.csv \
+		-v $(PWD)/data/anime.csv:/anime/data/anime.csv \
+		-v $(PWD)/data/rating_complete.csv:/anime/data/rating_complete.csv \
 		training:v0 \
 			--data_folder /anime/data \
 			--model_path /models/trained_model_todelete_new.pkl \
 			--nb_hidden_features 2
 
-
 docker_run_flask:
 	docker run \
-		-p 5000:5000 \
-		-v $(PROJECT_FOLDER)/models:/anime/models \
+		-p $(FLASK_PORT):$(FLASK_PORT) \
+		-v $(PWD)/models:/anime/models \
 		flask:v0 \
 			--model_path /anime/models/trained_model.pkl
-
 
 docker_run_streamlit:
 	docker run \
@@ -81,23 +104,15 @@ docker_run_streamlit:
 		streamlit:v0
 
 
-flask_run:
-	python flask/app.py\
-		--model_path /Users/louisdupont/Desktop/python_tests/anime-recommendation-system/models/trained_model.pkl
-
-streamlit_run:
-	streamlit run  streamlit/app.py -- \
-		--anime_path data/anime.csv \
-		--flask_url http://172.17.0.2:5000
-
-
+######################
+#  EXAMPLES TO TEST	 #
+######################
 predict_shingeki_no_kyojin:
-	@curl -X POST http://172.17.0.2:5000/predict \
+	@curl -X POST http://$(FLASK_IP):$(FLASK_PORT)/predict \
 		-d @flask/samples/shingeki_no_kyojin.json \
 		-H "Content-Type: application/json"
 
-
 predict_mainstream:
-	@curl -X POST http://127.0.0.1:5000/predict \
+	@curl -X POST http://$(FLASK_IP):$(FLASK_PORT)/predict \
 		-d @flask/samples/mainstream.json \
 		-H "Content-Type: application/json"

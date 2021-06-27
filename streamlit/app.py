@@ -2,6 +2,7 @@ import requests
 import json
 import argparse
 from typing import Dict, List
+import fire
 
 import streamlit as st
 import pandas as pd
@@ -13,6 +14,7 @@ from src.recommendation_system import (
     get_unique_anime_names
 )
 
+ANIME_PATH = 'data/anime.csv'
 HEADERS = {'content-type': 'application/json'}
 
 GOOGLE_SEARCH_TEMPLATE = 'https://www.google.com/search?q={formated_anime}'
@@ -21,7 +23,8 @@ RECOMMENDATION_LINE_TEMPLATE = ' > {rank} - {anime} ([google]({anime_link}))'
 
 @st.cache()
 def fetch_prediction_results(
-    recommendation_server_url: str,
+    model_ip: str,
+    model_port: int,
     anime_ratings: Dict[str, int],
     exclude_rated_animes: bool = True,
     columns_to_keep: List[str] = RecommendationSystem.VARIOUS_FEATURES,
@@ -37,7 +40,7 @@ def fetch_prediction_results(
     ))
 
     recommendation_json = requests.post(
-        recommendation_server_url + '/predict',
+        f'http://{model_ip}:{model_port}/predict',
         data=data,
         headers=HEADERS
     ).json()
@@ -217,8 +220,8 @@ def display_user_recommendations(
         st.dataframe(recommendation_df)
 
 
-def main(recommendation_server_url: str, anime_path: str) -> None:
-    anime_names = get_unique_anime_names_cached(anime_path)
+def run(model_ip: str, model_port: int) -> None:
+    anime_names = get_unique_anime_names_cached(ANIME_PATH)
     anime_ratings = AnimeRatings()
 
     init_layout()
@@ -228,7 +231,8 @@ def main(recommendation_server_url: str, anime_path: str) -> None:
 
     if anime_ratings.is_not_empty():
         recommendation_df = fetch_prediction_results(
-            recommendation_server_url=recommendation_server_url,
+            model_ip=model_ip,
+            model_port=model_port,
             anime_ratings=anime_ratings,
             scoring_weights=scoring_weights
         )
@@ -236,23 +240,4 @@ def main(recommendation_server_url: str, anime_path: str) -> None:
 
 
 if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--flask_url',
-        help='Flask app url',
-        default='http://127.0.0.2:5000',
-        type=str
-    )
-    parser.add_argument(
-        '--anime_path',
-        help='Path to "anime.csv"',
-        default='data/anime.csv',
-        type=str
-    )
-    known_args, unknown_args = parser.parse_known_args()
-
-    main(
-        recommendation_server_url=known_args.flask_url,
-        anime_path=known_args.anime_path
-    )
+    fire.Fire(run)

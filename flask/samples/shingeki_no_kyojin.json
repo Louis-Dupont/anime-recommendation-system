@@ -3,5 +3,12 @@
       "shingeki no kyojin season 3" : 10,
       "shingeki no kyojin season 2" : 10
     },
-  "number_of_results": 10
+    "number_of_results": 3,
+    "exclude_rated_animes": true,
+    "columns_to_keep": ["title", "relevancy"],
+    "scoring_weights": {
+      "popularity_score": 1,
+      "personal_rating_score": 10,
+      "relative_rating_score": 3
+    }
 }
