@@ -44,11 +44,15 @@ docker_build_training:
 		-t training:v0 \
 		-f docker/training/Dockerfile .
 
-
 docker_build_flask:
 	docker build \
 		-t flask:v0 \
 		-f docker/flask/Dockerfile .
+
+docker_build_streamlit:
+	docker build \
+		-t streamlit:v0 \
+		-f docker/streamlit/Dockerfile .
 
 
 PROJECT_FOLDER=/Users/louisdupont/Desktop/python_tests/anime-recommendation-system
@@ -71,13 +75,24 @@ docker_run_flask:
 			--model_path /anime/models/trained_model.pkl
 
 
+docker_run_streamlit:
+	docker run \
+		-it --rm \
+		streamlit:v0
+
+
 flask_run:
-	python app/app.py\
-		--model_path /Users/louisdupont/Desktop/python_tests/anime-recommendation-system/models/trained_model_100.pkl
+	python flask/app.py\
+		--model_path /Users/louisdupont/Desktop/python_tests/anime-recommendation-system/models/trained_model.pkl
+
+streamlit_run:
+	streamlit run  streamlit/app.py -- \
+		--anime_path data/anime.csv \
+		--flask_url http://172.17.0.2:5000
 
 
 predict_shingeki_no_kyojin:
-	@curl -X POST http://127.0.0.1:5000/predict \
+	@curl -X POST http://172.17.0.2:5000/predict \
 		-d @flask/samples/shingeki_no_kyojin.json \
 		-H "Content-Type: application/json"
 

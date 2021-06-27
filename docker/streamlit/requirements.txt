@@ -1,0 +1,6 @@
+# local package
+-e .
+
+# external requirements
+pandas==1.2.4
+streamlit==0.83.0
