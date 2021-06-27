@@ -14,7 +14,7 @@ from src.recommendation_system import (
     get_unique_anime_names
 )
 
-ANIME_PATH = 'data/anime.csv'
+ANIME_NAMES_PATH = 'data/anime.csv'
 HEADERS = {'content-type': 'application/json'}
 
 GOOGLE_SEARCH_TEMPLATE = 'https://www.google.com/search?q={formated_anime}'
@@ -221,7 +221,7 @@ def display_user_recommendations(
 
 
 def run(model_ip: str, model_port: int) -> None:
-    anime_names = get_unique_anime_names_cached(ANIME_PATH)
+    anime_names = get_unique_anime_names_cached(ANIME_NAMES_PATH)
     anime_ratings = AnimeRatings()
 
     init_layout()
