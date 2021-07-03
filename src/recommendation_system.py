@@ -1,6 +1,5 @@
 import pathlib
 from typing import Dict, List
-import argparse
 
 import pandas as pd
 import numpy as np

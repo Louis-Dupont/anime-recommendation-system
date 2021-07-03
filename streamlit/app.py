@@ -220,8 +220,8 @@ def display_user_recommendations(
         st.dataframe(recommendation_df)
 
 
-def run(model_ip: str, model_port: int) -> None:
-    anime_names = get_unique_anime_names_cached(ANIME_NAMES_PATH)
+def run(model_ip: str, model_port: int, anime_path: str) -> None:
+    anime_names = get_unique_anime_names_cached(anime_path)
     anime_ratings = AnimeRatings()
 
     init_layout()

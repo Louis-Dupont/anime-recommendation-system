@@ -3,8 +3,6 @@ FROM python:3.8
 WORKDIR /anime
 RUN mkdir data
 
-# RUN cd ../../.
-# RUN echo $(ls -1)
 RUN cd ../../.
 COPY requirements.txt .
 COPY setup.py .

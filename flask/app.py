@@ -33,7 +33,9 @@ def run(model_path: str, debug: bool, host_ip: str, port: int):
     """
 
     recommendation_system = RecommendationSystem.load(model_path)
+    print('loaded')
     build_prediction_route(recommendation_system)
+    print('function_loaded')
     app.run(debug=debug, host=host_ip, port=port)
 
 if __name__ == '__main__':
